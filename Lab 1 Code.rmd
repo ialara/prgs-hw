@@ -1,0 +1,198 @@
+---
+title: "Lab 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Building and Plotting the Network
+
+1. Install and load the packages readr and igraph
+
+```{r message=FALSE, warning=FALSE}
+### downloads and installs new features from the internet.  You only need to run these commands once.
+
+# install.packages("readr")
+# install.packages("igraph")
+
+## You need to load the particular fatures (packages) that you'll use for a given session
+library(readr)
+library(igraph)
+library(tidyverse)
+```
+
+2. Import nodes and edges as separate data frames using *read_csv* from readr
+
+```{r}
+## here, i'm importing the cvs files that contain the raw data entered through excel
+## the read_csv function is part of the readr package
+data_dir <- "Data"
+airports <- read_csv(file.path(data_dir, "airportnodes.csv"))
+routes <- read_csv(file.path(data_dir, "routesel.csv"))
+```
+### Explore the Data
+#### Airports data
+First, let's just get a feel for the columns, their types, and some of their values using `glimpse()`. Then, we'll look at missing values.
+```{r}
+glimpse(airports)
+colSums(is.na(airports))
+```
+It looks like we have some duplicated information, probably from a merge between different datasets. For example, `id`, `ID`, and `IATA` all seem to refer to the International Air Transport Association (IATA) 3-letter airport codes. Let's check the number of times those columns match:
+
+```{r}
+summary <- airports %>% group_by(id) %>% summarize(across(c('ID','IATA'), n_distinct))
+summary
+summary %>% summarize(across(-id, .fns = max))
+```
+The first summary table shows the number of unique values of `ID` and `IATA` for each value of `id`. The second summary table finds the maximum number of unique values. Since the maximum number is 1, we can be confident that the `id`, `ID`, and `IATA` columns always match. 
+
+Since `id` and `ID` have 0 missing values, but `IATA` has 750 `NA`s, there are some airports contained in the dataset(s) that used `id` / `ID` which are missing from the dataset that used `IATA`. Let's keep the `id` column to preserve these airports, and explore what the rows with missing `IATA` are like.
+```{r}
+airports %>% filter(is.na(IATA))
+nodes <- airports %>% select(-c('ID','IATA'))
+glimpse(nodes)
+```
+Based on the `filter` we used, it seems that the `airportID:source` columns (all columns from `airportID` to `source`) came from a different data set, and the airports with missing values from `IATA` are just absent from this second dataset (because all other columns in `airportID:source` for these rows are also `NA`). 
+
+To be consistent with which `latitude` and `longitude` we use across the airports in our dataset, let's stick with the ones that came from the first dataset, and drop the ones from the second dataset (`longitude.y` and `latitude.y`).
+
+Finally, since we are only really interested in the graph of flight routes, where nodes are departure/destination airports and arcs are (directed) routes operated by airlines between airports, we don't need a lot of the extra detail like the ICAO code, time zone, altitude, etc.
+```{r}
+nodes <- nodes %>% select(id:country) %>% select(-X1)
+glimpse(nodes)
+```
+#### Routes data
+
+Now we'll follow a similar process with the `routes` dataset.
+```{r}
+glimpse(routes)
+colSums(is.na(routes))
+```
+There are also some ambiguous names here, possibly indicative of repeated data. What does `country` refer to?
+```{r}
+routes %>% group_by(Source) %>% summarize(countries = n_distinct(country))
+routes %>% group_by(Target) %>% summarize(countries = n_distinct(country))
+routes %>% group_by(airline) %>% summarize(countries = n_distinct(country))
+```
+So `country` cannot refer to the country of the departure or arrival airport, since the same airport code has multiple unique values of `country`. It seems that `country` is then related to `airline`, since each `airline` has only a handful of values for `country`, and most `airline`s have only 1 `country`:
+```{r}
+mult_airlines <- routes %>% group_by(airline) %>% summarize(countries = n_distinct(country)) %>% filter(countries > 2) %>% .$airline
+mult_airlines
+
+routes %>% select(airline, airline_name, country) %>% filter(airline %in% mult_airlines) %>% unique()
+```
+It looks like some two-letter airline codes are repeated, perhaps because airlines registered in different countries are allowed to have the same code, or maybe some older airlines with routes in the data have since gone out of business or changed codes with another airline. Again, since we only really care about which airport pairs are served by _any_ airline, and especially considering that only 22 of the 568 airlines are registered to more than 1 country, I'm not concerned about this data issue.
+```{r}
+arcs <- routes %>% select(Source, Target)
+glimpse(arcs)
+arcs <- arcs %>% count(Source, Target, name='weight')
+glimpse(arcs)
+```
+The last step counts the number of times the unique airport pair occurs in the `routes` data. Since the data is directed, each one-way flight between two airports would be listed, i.e. $AAA \rightarrow BBB$ and $BBB \rightarrow AAA$ would be listed separately.
+
+3. Combine the nodelist and edgelist into a directed graph using *graph_from_data_frame* 
+
+```{r}
+g <- graph_from_data_frame(arcs)
+```
+
+4. Plot the graph using *plot*. 
+
+```{r}
+plot(g, edge.arrow.size=0.2, vertex.size=1, vertex.label.cex=0.4, edge.width = E(g)$weight, vertex.label.family='Helvetica', layout=layout_with_lgl)
+
+```
+```{r}
+V(g)$latitude <- airports$latitude[match(V(g)$name, airports$id)]
+V(g)$longitude <- airports$longitude[match(V(g)$name, airports$id)]
+
+latlong = matrix(c(V(g)$longitude, V(g)$latitude), ncol=2)
+```
+
+
+```{r}
+plot(g, edge.arrow.size=0.05, vertex.size=1, vertex.label=NA, edge.width = 0.1*E(g)$weight, vertex.label.family='Arial', layout=latlong, rescale=FALSE, asp=0, xlim=range(V(g)$longitude), ylim=range(V(g)$latitude))
+```
+
+
+```{r}
+library(tidyverse)
+world <- map_data("world")
+
+coords <- nodes %>% select(id:longitude)
+el <- as_edgelist(g) %>% as_tibble
+edges <- el %>% full_join(coords, by=c('V1' = 'id')) %>% 
+                full_join(coords, by=c('V2'='id'), suffix=c('.from', '.to')) %>% filter(V1 != V2)
+
+ggplot() +
+  geom_map(data=world, map=world, aes(long, lat, map_id=region), color='gray', fill='white', size=0.05) +
+  geom_point(data=nodes, aes(x=longitude, y=latitude), size=0.1, color='lightblue') +
+  geom_curve(data=edges, aes(x=longitude.from, xend=longitude.to,
+                               y=latitude.from, yend=latitude.to),
+               size=0.5, alpha=0.02, color='darkgreen')#+
+  #coord_map("ortho", orientation=c(30, 10, 0))
+```
+
+
+## Adding Network Measures
+
+5. Compute in-degree, out-degree, and total degree for each node using *degree* and save each of them as node attributes. Call them in.deg, out.deg, and deg.
+
+```{r}
+
+```
+
+6. Create a node attribute called size, and set it to the in-degree values of each node
+
+```{r}
+
+```
+
+
+7. Assign colors to node attributes based on sex.
+Hint: Vertices operate like data rows, and can be selected using boolean conditions inside *[ ]*. R will understand common colors provided in as strings (e.g. R understand what "light blue" is).
+
+```{r}
+
+
+```
+
+
+
+8. Replot data using the new variables to specify vertex size and color. Scale the size by 20.
+
+```{r}
+
+```
+
+## Filtering Networks
+
+9. Filter portions of the main Demo_g graph based on sex using *induced.subgraph* 
+
+```{r}
+
+```
+
+
+10. Filter portions of the main graph Demo_g based on in-degree using *induced.subgraph*. Choose nodes with more than 2 connections towards them.
+
+```{r}
+
+```
+
+11. Filter portions of the main graph Demo_g based on edge attributes using *subgraph.edges*. Choose relationships in year 2. Count the number of nodes and number of edges using *vcount* and *ecount*. Replot using graph attributes in part 8.
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
