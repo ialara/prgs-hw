@@ -1,0 +1,199 @@
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{enumerate}
+\usepackage{framed}
+\usepackage[margin=1in]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage{epstopdf}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{natbib}
+\usepackage{paralist}
+\usepackage{pdfpages}
+\usepackage{setspace}
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{graphicx} % graphics
+\usepackage{epsfig} % eps graphics
+\usepackage{hyperref} % urls
+\usepackage{booktabs} % table styling
+\usepackage{overpic}
+\usepackage{fix-cm}
+\usepackage{rotating}
+\usepackage{transparent}
+\usepackage{attrib}
+\usepackage{tikz}
+\usepackage{multirow}
+\usetikzlibrary{arrows,automata,3d}
+\usepackage{epstopdf}
+\usepackage{epigraph}
+\usepackage{sgame}
+\usetikzlibrary{calc}
+
+\tikzset{
+% Two node styles for game trees: solid and hollow
+solid node/.style={circle,draw,inner sep=1.5,fill=black},
+hollow node/.style={circle,draw,inner sep=1.5}
+}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newcommand{\g}{\ensuremath{G}}
+\newcommand{\strat}{\ensuremath{s}}
+\newcommand{\strati}[1]{\ensuremath{s_{#1}}}
+\newcommand{\stratpro}{\ensuremath{\mathbf{s}}}
+\newcommand{\stratproi}[1]{\ensuremath{\mathbf{s}_{#1}}}
+\newcommand{\besti}[2]{\ensuremath{B_{#1}\left(#2\right)}}
+\newcommand{\EE}[1]{\ensuremath{\operatorname{E}\left[#1\right]}}
+\newcommand{\condEE}[2]{\ensuremath{\operatorname{E}\left[#1\Big|#2\right]}}
+
+\newcommand{\solution}[2][no]{                                  % Replace "show" with any other word to hide solutions.
+    \ifthenelse{ \equal{#1}{show} }{ \textcolor{blue}{#2}}{}}    % THIS FUNCTION LETS YOU WRITE IN SOLUTIONS BUT HIDE THEM WHEN RENDERING
+
+\title{Problem Set \#2}
+\author{Game Theory, Spring 2022}
+\date{Due Tuesday, April 12 by 8:30 AM Pacific time}
+
+\begin{document}
+
+\maketitle
+
+%\begin{figure}[h]
+%  \centering
+%    \includegraphics[width=0.50\textwidth]{../Cartoons/risk-game-cartoon.jpeg}
+% \caption{Sadly, this cartoon feels more relevant now than when I wrote this problem in January}
+%\end{figure}
+
+\section{Colonel Blotto Games}
+
+The Colonel Blotto game models the allocation of resources between two competing parties (there are many variations of the game, and we will examine two below). If you play the game Risk, you are already familiar with this type of game. We will examine some of its characteristics in this problem. (In fact, this game, like others we will see, was studied before game theory was even a formal concept. It appealed to mathematicians because of some of its structural complexities, so Emile Borel was the first to publish on it in 1921. But it was formalized at RAND before even the Prisoner's Dilemma was invented, in a paper by Gross \& Wagner in 1950--see ``A Continuous Colonel Blotto Game," RAND Technical Report RM-408.)
+
+Suppose Colonel Blotto commands a large army, consisting of 5 battalions. The enemy, Captain X, has 3 battalions. Each side wants to capture their opponent's base while maintaining control of their own base. The game works as follows:
+\begin{itemize}
+\item Each side allocates a certain number of battalions to attack their opponent. The remaining soldiers stay and guard their own base.
+\item If attackers outnumber defenders at a given base, then the attackers win the base. Otherwise the defenders keep their base (including if there are equal numbers of attackers and defenders).
+\item Each side gets a payoff of +1 if they win their opponent's base, and -1 if they lose their own base. They get 0 for keeping their own base or failing to capture the opponent's base.
+\item Payoffs are additive, so if an army wins their opponent's base but loses their own, they get a total payoff of 1-1=0. If they win the opponent's base and keep their own, they get 1+0=1. And so forth.
+\end{itemize}
+
+\subsection*{Part a} Write the normal form. Which strategies survive IDSDS? Are there any pure strategy NE? Can Captain X ever beat Blotto?
+\\ \\
+Colonel Blotto can choose to send any integer number $b$ of battalions to attack with, from 0 to 5. Captain X can choose any integer $x$ from 0..3. Whoever is not sent to attack stays back to defend the base. So the defenders for Col Blotto are $5 - b$, and the defenders for Captain X are $3 - x$. The payoffs can then be summarized by:
+\begin{itemize}
+	\item $(1, -1)$ if Capt X is overwhelmed, and cannot also overwhelm Col Blotto: $\{(b, x) \: | \: 3 < b + x \leq 5\}$
+	\item $(-1, 1)$ if Col Blotto is overwhelmed, and cannot also overwhelm Capt X: $\{(b, x) \: | \: 5 < b + x \leq 3 \} = \varnothing$
+	\item $(0, 0)$ otherwise (either nobody attacks, or the attacks cancel each other out because both bases are overwhelmed). 
+\end{itemize} 
+
+\begin{game}{6}{4}[Col Blotto][Capt X]
+	& Attack 0 & Attack 1 & Attack 2 & Attack 3 \\
+	Attack 0 & 0,\emph{0}      & 0,\emph{0}      & 0,\emph{0}      & 0,\emph{0} \\
+	Attack 1 & 0,\emph{0}      & 0,\emph{0}      & 0,\emph{0}      & \emph{1},-1 \\
+	Attack 2 & 0,\emph{0}      & 0,\emph{0}      & \emph{1},-1     & \emph{1},-1 \\
+	Attack 3 & 0,\emph{0}      & \emph{1},-1     & \emph{1},-1     & 0,\emph{0} \\
+	Attack 4 & \emph{1},-1     & \emph{1},-1     & 0,\emph{0}      & 0,\emph{0} \\
+	Attack 5 & \emph{1},-1     & 0,\emph{0}      & 0,\emph{0}      & 0,\emph{0} \\
+\end{game}
+\\ \\
+Best responses are \emph{italicized}. \\ \\
+So the only strategy that is strictly dominated in the whole game is Col Blotto choosing Attack 0. Eliminating this strategy does not reveal any iterated strictly dominated strategies. There are also no pure strategy Nash equilibria, and Capt X has no chance of ever beating Col Blotto.
+\newpage
+
+\subsection*{Part b} Note--this part is kind of tedious and it's easy to make mistakes, so take your time.
+
+Let's complicate the game. Suppose now there are 3 battlefields: $A$, $B$, and $C$. Blotto has 3 battalions and Captain X has 2. Describe a player's strategy as $(A,B,C)$, the number of battalions they send to each battlefield in order. A player wins a battlefield if they have more battalions at that location (ties count as losses). A player's payoff is the number of battlefields they win; losses count as 0.
+
+Draw the normal form. In how many outcomes does Captain X win more battlefields than Blotto? In how many situations do the two sides win the same number? 
+\\ \\
+Since there is no "defense" to be gained by holding battalions in reserve like there was in the previous part, we can safely assume that both officers will send all of their battalions into battle, i.e. neither one would choose to reserve a battalion from all battlefields A, B, and C.
+
+Col Blotto has 3 battalions, and 3 battlefields to choose from. His possibilities are then:
+\begin{itemize}
+	\item One battalion at each battlefield: $(A, B, C) = (1, 1, 1)$
+	\item Two battalions at one battlefield, one battalion at the second, and zero battalions at the third: $(A, B, C) \in \{(2, 0, 1), (2, 1, 0), (0, 2, 1), (0, 1, 2), (1, 0, 2), (1, 2, 0)\}$
+	\item All three battalions at one battlefield: $(A, B, C) \in \{(3, 0, 0), (0, 3, 0), (0, 0, 3)\}$
+\end{itemize}
+
+Capt X has only 2 battalions, so his possibilities are:
+\begin{itemize}
+	\item One battalion at each of two battlefields, zero at the third: $(A, B, C) \in \{(1, 1, 0), (1, 0, 1), (0, 1, 1)\}$
+	\item Two battalions at one battlefield, zero at the remaining battlefields: $(A, B, C) \in \{(2, 0, 0), (0, 2, 0), (0, 0, 2)\}$
+\end{itemize}
+We describe a $10 \times 6$ game:
+
+\begin{game}{10}{6}[Col Blotto][Capt X]
+	          & (1, 1, 0) & (1, 0, 1) & (0, 1, 1) & (2, 0, 0) & (0, 2, 0) & (0, 0, 2) \\
+	(1, 1, 1) & 1,0       & 1,0       & 1,0       & 2,1       & 2,1       & 2,1 \\
+	(2, 0, 1) & 2,1       & 1,0       & 1,1       & 1,0       & 2,1       & 1,1 \\
+	(2, 1, 0) & 1,0       & 2,1       & 1,1       & 1,0       & 1,1       & 2,1 \\
+	(0, 2, 1) & 2,1       & 1,1       & 1,0       & 2,1       & 1,0       & 1,1 \\
+	(1, 2, 0) & 1,0       & 1,1       & 2,1       & 1,1       & 1,0       & 2,1 \\
+	(1, 0, 2) & 1,1       & 1,0       & 2,1       & 1,1       & 2,1       & 1,0 \\
+	(0, 1, 2) & 1,1       & 2,1       & 1,0       & 2,1       & 1,1       & 1,0 \\
+	(3, 0, 0) & 1,1       & 1,1       & 1,2       & 1,0       & 1,1       & 1,1 \\
+	(0, 3, 0) & 1,1       & 1,2       & 1,1       & 1,1       & 1,0       & 1,1 \\
+	(0, 0, 3) & 1,2       & 1,1       & 1,1       & 1,1       & 1,1       & 1,0 \\
+\end{game}
+\\ \\
+Captain X wins more battles than Col Blotto in 3 of the 60 possible outcomes ($5\%$). In 24 of the 60 possible outcomes ($40\%$), both sides tie by winning one battle each.
+
+\newpage
+
+\subsection*{Part c} An alternative version of Blotto is non-deterministic. The winner of a battlefield is not necessarily the player with the most resources in that battlefield. Instead, the winner is determined by lottery, where the probability of winning is equal to the fraction of total resources owned by that player.
+
+To make this more concrete, instead of battlefields let's suppose we have two prizes given away by lottery. The two players are you and your frenemy, who you refer to as X behind their back because you are dramatic like that. You each have 2 tickets that you can put in either prize basket. To calculate each person's payoffs, first calculate the fraction of tickets owned by that person for \emph{each} prize basket. (If no one put any tickets in a basket, assume it's a 50/50 chance of winning that prize.) Then add the two fractions.
+
+Write the normal form below. (Note: The lottery calculations you are making will be related to expected payoffs, which we will study in the next chapter when we discuss mixed strategies.)
+\\ \\
+Express each player's strategy as $(A, B)$, where $A$ is the number of tickets placed in the first prize bucket, and $B$ is the number of tickets placed in the second prize bucket. (Formally, $\{(A, B) \; | \; A + B \leq 2, \; A,B \in \mathbb{N}\}$). There is no benefit to withholding a ticket from either prize bucket, so let's assume both players deposit both tickets. Each player's options are $(A, B) \in \{(2, 0), (0, 2), (1, 1)\}$. The total proportion of tickets owned by each player per prize bucket can be expressed as:
+
+\begin{game}{3}{3}[Me][X]
+	       & (2, 0)    & (0, 2)    & (1, 1) \\
+	(2, 0) & 1,1       & 1,1       & 0.67,1.33 \\
+	(0, 2) & 1,1       & 1,1       & 0.67,1.33 \\
+	(1, 1) & 1.33,0.67 & 1.33,0.67 & 1,1
+\end{game}
+\\ \\
+The only outcomes that are not 1,1 (i.e. where one player has an advantage of winning a prize) occur when one player splits their tickets and the other does not. In this case, the player that splits guarantees a win from one bucket, and has a one-third chance of winning from the second bucket. The player who pools has a two-thirds chance of winning from the pooled bucket, and zero chance of winning from the other bucket.
+\newpage
+
+\subsection*{Part d} Compare and contrast the deterministic version (parts a and b) with the lottery version (part c). In which case would you expect people to spread resources evenly, versus lump them more in one area than another? How does it depend on whether someone has more total resources than their opponent? Explain your reasoning; there is no single correct answer.
+
+\newpage
+
+\subsection*{Part e}
+
+A more general version of the Blotto game involves two sides allocating a fixed amount of resources over $N$ arenas. For example, the ``arenas" might be political races (allocating cash across multiple Senate races), battlefields (allocating soldiers across multiple sites), or a lottery (as in part c). As the amount of resources and the number of arenas increase, the game has more and more dimensions and becomes very difficult to solve -- but also more interesting.
+
+Let's change our example and apply it to yet another setting. There are still 2 players, who are lobbyists labeled $X$ and $Y$. But now there are 3 ``arenas:" Senators $A$, $B$, and $C$. The lobbyists want each senator to vote for their preferred version of a bill, also labeled $X$ and $Y$. $X$ is a controversial amendment to the existing law, whereas $Y$ retains the status quo. Each lobbyist has to decide whether to bribe each senator. The rest of the game works as follows:
+\begin{itemize}
+\item Bribing a senator has a payoff of -1 for the lobbyist
+\item If a senator is bribed by just one lobbyist, the senator votes for that lobbyist's version of the bill
+\item If a senator is bribed by neither or both lobbyists, the senator votes for status quo version $Y$
+\item The version of the bill that wins is the one with the most votes out of the 3 senators
+\item A lobbyist gets payoff of 3 if their preferred version of the bill is enacted.
+\end{itemize}
+So, if a lobbyist bribes $n$ Senators and their bill wins, the lobbyists' total payoff is $3-n$. If they bribe $n$ Senators and their bill loses, their payoff is $-n$. (Note: this is not quite a Blotto game, since lobbyists do not have spend all of their resources, but it is related.)
+
+Draw the a table similar to the normal form, but instead of listing payoffs, the table shows \emph{which bill wins} under each strategy. In what fraction of outcomes does version $X$ get passed?
+
+\newpage
+
+\subsection*{Part f} Write the normal form, showing the payoffs for each lobbyist. What strategies survive IDSDS? In what fraction of those cases does $X$ get passed?
+
+\newpage
+
+\subsection*{Part g} In his 2006 book \emph{How to Win Weak Wars}, Ivan Arreguin-Toft analyzed every war between unequal opponents over the last 200 years. He found that the weak side won the war nearly 30\% of the time. But, over the course of time, the weak side has been winning at a higher and higher rate.
+
+It turns out that in Blotto games, as the number of arenas grows, the number of outcomes in which the underdog player wins will increase. How might this help explain Arreguin-Toft's finding?
+
+\end{document}

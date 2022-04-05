@@ -1,15 +1,5 @@
-# Ignore everything
-*
-
-# Except directories
-!*/
-
-# And top-level files
-!.gitignore
-!README.md
-
 # Ignore these extensions
 **.aux
 **.log
-**.synctex
+**.synctex*
 **.out
