@@ -78,12 +78,12 @@ routes %>% group_by(airline) %>% summarize(countries = n_distinct(country))
 ```
 So `country` cannot refer to the country of the departure or arrival airport, since the same airport code has multiple unique values of `country`. It seems that `country` is then related to `airline`, since each `airline` has only a handful of values for `country`, and most `airline`s have only 1 `country`:
 ```{r}
-mult_airlines <- routes %>% group_by(airline) %>% summarize(countries = n_distinct(country)) %>% filter(countries > 2) %>% .$airline
+mult_airlines <- routes %>% group_by(airline) %>% summarize(countries = n_distinct(country)) %>% filter(countries > 1) %>% .$airline
 mult_airlines
 
 routes %>% select(airline, airline_name, country) %>% filter(airline %in% mult_airlines) %>% unique()
 ```
-It looks like some two-letter airline codes are repeated, perhaps because airlines registered in different countries are allowed to have the same code, or maybe some older airlines with routes in the data have since gone out of business or changed codes with another airline. Again, since we only really care about which airport pairs are served by _any_ airline, and especially considering that only 22 of the 568 airlines are registered to more than 1 country, I'm not concerned about this data issue.
+It looks like some two-letter airline codes are repeated, perhaps because airlines registered in different countries are allowed to have the same code, or maybe some older airlines with routes in the data have since gone out of business or changed codes with another airline. Again, since we only really care about which airport pairs are served by _any_ airline. In total, 113 of the 568 airline codes are associated with more than 1 country. Overall, though, I'm not concerned about this data issue.
 ```{r}
 arcs <- routes %>% select(Source, Target)
 glimpse(arcs)
