@@ -185,15 +185,98 @@ Let's change our example and apply it to yet another setting. There are still 2 
 So, if a lobbyist bribes $n$ Senators and their bill wins, the lobbyists' total payoff is $3-n$. If they bribe $n$ Senators and their bill loses, their payoff is $-n$. (Note: this is not quite a Blotto game, since lobbyists do not have spend all of their resources, but it is related.)
 
 Draw the a table similar to the normal form, but instead of listing payoffs, the table shows \emph{which bill wins} under each strategy. In what fraction of outcomes does version $X$ get passed?
+\\ \\
+Each lobbyist can choose to bribe any number of senators. Let $(A, B, C), \: A, B, C \in \{0, 1\}$ represent each lobbyist's decision to bribe (1) or not bribe (0) each senator. There are $2^3 = 8$ possible permutations, so we have an $8 \times 8$ game:
+\begin{itemize}
+	\item Bribe nobody: $(0, 0, 0)$
+	\item Bribe one senator: $\{(1, 0, 0), (0, 1, 0), (0, 0, 1)\}$
+	\item Bribe two senators: $\{(1, 1, 0), (1, 0, 1), (0, 1, 1)\}$
+	\item Bribe all three senators: $(1, 1, 1)$
+\end{itemize}
+Each senator will only vote for Version $X$ if Lobbyist $X$ lobbies the senator, and Lobbyist $Y$ does not. So, for Version $X$ to pass, Lobbyist $X$ must bribe at least two senators that Lobbyist $Y$ does not bribe. The bill version that passes can be summarized in the $8 \times 8$ table below:
 
+\begin{game}{8}{8}[Lobbyist $X$][Lobbyist $Y$]
+	          & (0, 0, 0) & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) & (1, 1, 0) & (1, 0, 1) & (0, 1, 1) & (1, 1, 1) \\
+	(0, 0, 0) & Y         & Y         & Y         & Y         & Y         & Y         & Y         & Y         \\
+	(1, 0, 0) & Y         & Y         & Y         & Y         & Y         & Y         & Y         & Y         \\
+	(0, 1, 0) & Y         & Y         & Y         & Y         & Y         & Y         & Y         & Y         \\
+	(0, 0, 1) & Y         & Y         & Y         & Y         & Y         & Y         & Y         & Y         \\
+	(1, 1, 0) & (X)       & Y         & Y         & (X)       & Y         & Y         & Y         & Y         \\
+	(1, 0, 1) & (X)       & Y         & (X)       & Y         & Y         & Y         & Y         & Y         \\
+	(0, 1, 1) & (X)       & (X)       & Y         & Y         & Y         & Y         & Y         & Y         \\
+	(1, 1, 1) & (X)       & (X)       & (X)       & (X)       & Y         & Y         & Y         & Y         \\
+\end{game}
+\\ \\ \\
+Version $X$ passes in 10 of the 64 possible outcomes (16\%).
 \newpage
 
-\subsection*{Part f} Write the normal form, showing the payoffs for each lobbyist. What strategies survive IDSDS? In what fraction of those cases does $X$ get passed?
+\subsection*{Part f} Write the normal form, showing the payoffs for each lobbyist. What strategies survive IDSDS? In what fraction of those cases does $X$ get passed? \\
 
+The payoff for each lobbyist is 3 if their bill wins, minus 1 for each senator they bribe:
+
+\begin{game}{8}{8}[Lobbyist $X$][Lobbyist $Y$]
+	          & (0, 0, 0) & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) & (1, 1, 0) & (1, 0, 1) & (0, 1, 1) & (1, 1, 1) \\
+	(0, 0, 0) & 0,3       & 0,2       & 0,2       & 0,2       & 0,1       & 0,1       & 0,1       & 0,0         \\
+	(1, 0, 0) & -1,3      & -1,2      & -1,2      & -1,2      & -1,1      & -1,1      & -1,1      & -1,0         \\
+	(0, 1, 0) & -1,3      & -1,2      & -1,2      & -1,2      & -1,1      & -1,1      & -1,1      & -1,0         \\
+	(0, 0, 1) & -1,3      & -1,2      & -1,2      & -1,2      & -1,1      & -1,1      & -1,1      & -1,0         \\
+	(1, 1, 0) & (1,0)     & -2,2      & -2,2      & (1,-1)    & -2,1      & -2,1      & -2,1      & -2,0         \\
+	(1, 0, 1) & (1,0)     & -2,2      & (1,-1)    & -2,2      & -2,1      & -2,1      & -2,1      & -2,0         \\
+	(0, 1, 1) & (1,0)     & (1,-1)    & -2,2      & -2,2      & -2,1      & -2,1      & -2,1      & -2,0         \\
+	(1, 1, 1) & (0,0)     & (0,-1)    & (0,-1)    & (0,-1)    & -3,1      & -3,1      & -3,1      & -3,0         \\
+\end{game}
+\\ \\
+Note: The payoffs in parentheses ( ) represent the outcomes in which Version $X$ passes. \\
+
+It is clear that Lobbyist $X$ choosing to bribe only one senator is a strictly dominated strategy: Version $Y$ is guaranteed to pass and the money spent by Lobbyist $X$ is wasted. Lobbyist $X$ choosing to lobby all three senators is also a strictly dominated strategy...in any case where that results in a win, a win can also be achieved by the right combination of lobbying two senators, and in any case where that results in a loss, the same loss would occur without any lobbying. Similarly, Lobbyist $Y$ choosing to bribe all three senators is a strictly dominated strategy; any win achieved by bribing all three senators can be achieved by bribing any two senators. So, after one iteration, the game simplifies to $4 \times 7$:
+
+\begin{game}{4}{7}[Lobbyist $X$][Lobbyist $Y$]
+	          & (0, 0, 0) & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) & (1, 1, 0) & (1, 0, 1) & (0, 1, 1) \\
+	(0, 0, 0) & 0,3       & 0,2       & 0,2       & 0,2       & 0,1       & 0,1       & 0,1       \\
+	(1, 1, 0) & (1,0)     & -2,2      & -2,2      & (1,-1)    & -2,1      & -2,1      & -2,1      \\
+	(1, 0, 1) & (1,0)     & -2,2      & (1,-1)    & -2,2      & -2,1      & -2,1      & -2,1      \\
+	(0, 1, 1) & (1,0)     & (1,-1)    & -2,2      & -2,2      & -2,1      & -2,1      & -2,1      \\
+\end{game}
+\\
+
+After eliminating Lobbyist $X$'s choice to bribe all three senators, any strategy where Lobbyist $Y$ bribes two senators is strictly dominated by a strategy that bribes fewer senators. Now the game is $4 \times 4$:
+
+\begin{game}{4}{4}[Lobbyist $X$][Lobbyist $Y$]
+	          & (0, 0, 0) & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) \\
+	(0, 0, 0) & 0,3       & 0,2       & 0,2       & 0,2       \\
+	(1, 1, 0) & (1,0)     & -2,2      & -2,2      & (1,-1)    \\
+	(1, 0, 1) & (1,0)     & -2,2      & (1,-1)    & -2,2      \\
+	(0, 1, 1) & (1,0)     & (1,-1)    & -2,2      & -2,2      \\
+\end{game}
+\\ 
+
+Removing the threat of Lobbyist $Y$ bribing two senators means the choice for Lobbyist $X$ to bribe nobody is now strictly dominated, so the game becomes $3 \times 4$:
+ 
+\begin{game}{3}{4}[Lobbyist $X$][Lobbyist $Y$]
+	          & (0, 0, 0) & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) \\
+	(1, 1, 0) & (1,0)     & -2,2      & -2,2      & (1,-1)    \\
+	(1, 0, 1) & (1,0)     & -2,2      & (1,-1)    & -2,2      \\
+	(0, 1, 1) & (1,0)     & (1,-1)    & -2,2      & -2,2      \\
+\end{game}
+\\ 
+
+Finally, this makes Lobbyist $Y$ bribing nobody a strictly dominated strategy, yielding a $3 \times 3$:
+
+\begin{game}{3}{3}[Lobbyist $X$][Lobbyist $Y$]
+	          & (1, 0, 0) & (0, 1, 0) & (0, 0, 1) \\
+	(1, 1, 0) & -2,2      & -2,2      & (1,-1)    \\
+	(1, 0, 1) & -2,2      & (1,-1)    & -2,2      \\
+	(0, 1, 1) & (1,-1)    & -2,2      & -2,2      \\
+\end{game}
+\\ 
+
+Version $X$ now passes in 3 of the 9 possible outcomes (33\%).
 \newpage
 
 \subsection*{Part g} In his 2006 book \emph{How to Win Weak Wars}, Ivan Arreguin-Toft analyzed every war between unequal opponents over the last 200 years. He found that the weak side won the war nearly 30\% of the time. But, over the course of time, the weak side has been winning at a higher and higher rate.
 
-It turns out that in Blotto games, as the number of arenas grows, the number of outcomes in which the underdog player wins will increase. How might this help explain Arreguin-Toft's finding?
+It turns out that in Blotto games, as the number of arenas grows, the number of outcomes in which the underdog player wins will increase. How might this help explain Arreguin-Toft's finding? \\ \\
+
+If we think of arenas in geospatial terms, modern guerrilla warfare is increasingly dispersed, and the nature of conflict is decreasingly one of traditional force-on-force battles. So, the ability to use "hit-and-run" tactics more liberally (e.g., as a result of stolen/pirated technology, information warfare, cheaper and more widely available ways to make IEDs, ...) can be thought of as increasing the number of arenas in which the larger force must compete, thereby increasing the number of outcomes in which the underdog prevails.
 
 \end{document}
