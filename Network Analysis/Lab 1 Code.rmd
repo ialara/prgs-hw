@@ -1,5 +1,7 @@
 ---
 title: "Lab 1"
+author: "Ignacio Lara"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -134,65 +136,3 @@ ggplot() +
                size=0.5, alpha=0.02, color='darkgreen')#+
   #coord_map("ortho", orientation=c(30, 10, 0))
 ```
-
-
-## Adding Network Measures
-
-5. Compute in-degree, out-degree, and total degree for each node using *degree* and save each of them as node attributes. Call them in.deg, out.deg, and deg.
-
-```{r}
-
-```
-
-6. Create a node attribute called size, and set it to the in-degree values of each node
-
-```{r}
-
-```
-
-
-7. Assign colors to node attributes based on sex.
-Hint: Vertices operate like data rows, and can be selected using boolean conditions inside *[ ]*. R will understand common colors provided in as strings (e.g. R understand what "light blue" is).
-
-```{r}
-
-
-```
-
-
-
-8. Replot data using the new variables to specify vertex size and color. Scale the size by 20.
-
-```{r}
-
-```
-
-## Filtering Networks
-
-9. Filter portions of the main Demo_g graph based on sex using *induced.subgraph* 
-
-```{r}
-
-```
-
-
-10. Filter portions of the main graph Demo_g based on in-degree using *induced.subgraph*. Choose nodes with more than 2 connections towards them.
-
-```{r}
-
-```
-
-11. Filter portions of the main graph Demo_g based on edge attributes using *subgraph.edges*. Choose relationships in year 2. Count the number of nodes and number of edges using *vcount* and *ecount*. Replot using graph attributes in part 8.
-
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
