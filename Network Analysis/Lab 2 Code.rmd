@@ -131,3 +131,59 @@ plot(g_top, edge.arrow.size=0.2, vertex.size=V(g_top)$strength / 64, vertex.shap
 In the above graph, the size of the node is proportional to its total strength, i.e. the weighted sum of all edges flowing into and out of the node. The color of the node corresponds to the country of the airport. The width of the edge is proportional to the original `weight` we calculated earlier, i.e. the count of that city pair appearing in the `routesel` data file. Finally, the color of the edge matches the color of its starting node, to help visualize the directionality of the network. 
 
 One thing that stands out to me is the dominance of domestic US air travel, even in a global routes dataset. In particular, Atlanta (ATL) has by far the greatest strength; its connection to and from Chicago O'Hare (ORD) is likely a significant contributor, and dwarfs almost any other city pair in the top 20--including transcontinental, transatlantic, and intra-Europe/intra-Asia routes. I was also surprised at the German hubs of Frankfurt (FRA) and Munich (MUC)--their strength is quite high without any particularly dominant city-pairs; perhaps this is an indication of Germany's high betweenness, i.e. high strength resulting from a large number of infrequently-traveled routes rather than a few major arterial connections.
+
+#### Other Maps
+
+Note that this graph only shows flights among the 20 airports with the greatest strength; it does not show other airports that the top 20 airports fly to. Suppose we were interested in visualizing that more complete map, i.e. we want to see the map of any routes that depart from or arrive in the airports with the highest strength:
+```{r}
+choose_top <- 5
+
+top_subset <- top_degree_airports[0:choose_top,] # Further filter the top list from above
+## Show the top_subset nodes, and any direct destination from those nodes (1-neighbors)
+g_out <- subgraph.edges(g, unlist(incident_edges(g, top_subset$name, mode="out"), use.names=F))
+
+v_attrs <- as_tibble(vertex_attr(g_out))
+gorder(g_out) # Number of vertices
+n_distinct(v_attrs$country) # Number of unique countries
+
+world <- map_data("world")
+
+ggplot() +
+  geom_map(data=world, map=world, aes(long, lat, map_id=region), color='gray', fill='white', size=0.05) +
+  geom_point(data=v_attrs, aes(x=longitude, y=latitude, size=strength/4096, color=country), alpha=0.2) +
+  geom_curve(data=as_long_data_frame(g_out), aes(x=from_longitude, xend=to_longitude,
+                               y=from_latitude, yend=to_latitude, color=factor(from_country), size=weight/4096),
+                              alpha=0.1) + 
+  scale_color_discrete(breaks = top_subset$country) + 
+  scale_size(guide='none') +
+  theme(legend.position="top")
+```
+
+
+So, by looking at just the 5 airports with the greatest total strength, we can fly _from_ those airports to a total of 647 other airports, spread across 147 countries! Note that this is only showing the routes _departing_ from the top 5 airports...a graph attempting to show arrivals as well would be pretty overwhelming.
+
+Here's what that would look like for just the top 2 airports, Frankfurt (FRA) and Atlanta (ATL):
+```{r}
+choose_top <- 2
+
+top_subset <- top_degree_airports[0:choose_top,]
+## Now show all departures and arrivals to/from top nodes (mode='all')
+g_out <- subgraph.edges(g, unlist(incident_edges(g, top_subset$name, mode="all"), use.names=F))
+
+v_attrs <- as_tibble(vertex_attr(g_out))
+gorder(g_out)
+n_distinct(v_attrs$country)
+
+ggplot() +
+  geom_map(data=world, map=world, aes(long, lat, map_id=region), color='gray', fill='white', size=0.05) +
+  geom_point(data=v_attrs, aes(x=longitude, y=latitude, size=strength/4096, color=country), alpha=0.2) +
+  geom_curve(data=as_long_data_frame(g_out), aes(x=from_longitude, xend=to_longitude,
+                               y=from_latitude, yend=to_latitude, color=factor(from_country), size=weight/4096),
+                              alpha=0.1) + 
+  scale_color_discrete(breaks = top_subset$country) + 
+  scale_size(guide='none') +
+  theme(legend.position="top")
+```
+
+
+We still see that those two airports are connected (via departures, arrivals, or both) to 412 other airports in a total of 116 countries!
