@@ -143,7 +143,7 @@ The probabilities of the other outcomes can be calculated similarly:
 	\end{game}
 \end{center}
 
-Each player's equilibrium expected payoff is simply the payoff for each outcome, weighted by the probability of arriving at that outcome. For Driver 1:
+Each player's equilibrium expected payoff is simply their payoff for each outcome, weighted by the probability of arriving at that outcome. For Driver 1:
 \[
 \begin{aligned}
 \mathbb{E}(V) &= \frac{9}{16}(-2) + \frac{3}{16}(-1) + \frac{3}{16}(1) + \frac{1}{16}(-10) \\ \\
@@ -158,10 +158,28 @@ Again, we can rely on symmetry to safely say that -1.75 is also Driver 2's expec
 Now we introduce the stoplight. The stoplight serves as a \emph{public signal}; in other words, it is visible to everyone and allows drivers a chance to coordinate their responses. There are two possible signals, which we describe as a pair of colors. The first color is shown to Driver 1, and the second color to Driver 2. The signals are $\gamma_1=(Red,Green)$ and $\gamma_2=(Green,Red)$. Each signal is shown with probability $\frac{1}{2}$.
 
 In a correlated equilibrium, each player chooses a strategy (possibly a mixed strategy) to use for \emph{each} signal. If the strategies are mutual best responses, then the equilibrium holds. In this case, find a pair of mutual best responses for each signal. Explain your logic briefly to defend your answer.
+\\ \\
+\begin{center}
+	\begin{game}{2}{2}[Driver 1][Driver 2]
+		& Stop & Go\\
+		Stop & -2,-2 & -1,1\\
+		Go & 1,-1 & -10,-10
+	\end{game}
+\end{center}
+Because there are only two signals, and two options per signal, there is no difference here in observing only your own signal, or observing both your and the other driver's signals (because observing your own can tell you exactly what the other driver's is). So, if Driver 1 sees Red ($\gamma_1$), they know that Driver 2 sees Green, and vice versa for $\gamma_2$. The question becomes whether either Driver has an incentive to deviate from their ``assigned" strategy (operating under the assumption that both drivers understand Red to mean stop, and Green to mean go). 
+
+If Driver 1 sees Red, is there an incentive to ``defy" the signal, and Go anyway? If Driver 1 believes that Driver 2 will comply with their signal and Go, then Driver 1 receives a payoff of -1 by ``complying" and choosing Stop, versus a payoff of -10 by ``defying" and choosing Go. There is no incentive for Driver 1 to deviate from the signal's suggestion. Driver 2, if believing that Driver 1 would comply and Stop, receives a payoff of 1 by complying and choosing Go, versus a payoff of -2 by defying and choosing Stop. So Driver 2 does not have an incentive to deviate from the signal. This is then a valid, correlated equilibrium.
+
+Again, by relying on symmetry, we can conclude that the correlated equilibrium exists whether signal $\gamma_1$ or $\gamma_2$ is shown.
+  
 
 \newpage
 
 \subsection*{Part d} In the correlated equilibrium, what is the probability that the drivers crash, and what is the expected payoff of each driver prior to approaching the stoplight?
+\\ \\
+Since both drivers strictly prefer complying to defying their signal, the probability that the drivers crash by ending up in (Go, Go) is zero. Regardless of whether $\gamma_1$ or $\gamma_2$ is shown, one driver will Stop and the other will Go. 
+
+Before approaching the stoplight, the probability of observing either signal is one half, i.e. $\Pr{(\gamma_1)} = \Pr{(\gamma_2)} = 0.5$. So the drivers' expected payoffs are the average of their payoffs under $\gamma_1$ and $\gamma_2$. From the above, Driver 1's expected payoff under $\gamma_1$ is -1; under $\gamma_2$ it is 1, for an expected payoff of 0. Driver 2's payoffs are reversed, but still average to 0.
 
 \newpage
 
@@ -174,14 +192,56 @@ Hare & 3,0 & 1,1
 \end{game}
 \end{center}
 You can verify that both (Stag,Stag) and (Hare,Hare) are Nash equilibria. Suppose that one player plays Stag but has a small probability $\epsilon$ of ``accidentally" playing Hare, so their strategy is $(1-\epsilon)[Stag]+\epsilon[Hare]$. What is the other player's best response? (Note: By ``small" we mean that you can assume $\epsilon$ is much smaller than 1.)
+\\ \\
+Without loss of generality, assume Player 2 is the one prone to blunder, such that the game becomes:
+\begin{center}
+	\begin{game}{2}{2}[Player 1][Player 2]
+		& Stag ($1-\epsilon$) & Hare ($\epsilon$)\\
+		Stag & 3,3 & 0,3\\
+		Hare & 3,0 & 1,1
+	\end{game}
+\end{center}
+
+How big would $\epsilon$ need to be to induce Player 1 to mix? Let's calculate Player 1's expected payoffs. (LHS represents payoffs from choosing Stag, RHS represents payoffs from choosing Hare).
+\[
+\begin{aligned}
+	(1-\epsilon)(3) + \epsilon(0) &\overset{?}{=} (1-\epsilon)(3) + \epsilon(1) \\
+	3 - 3\epsilon &\overset{?}{=} 3 - 3\epsilon + \epsilon \\
+	3 - 3\epsilon &\overset{?}{=} 3 - 2\epsilon
+\end{aligned}
+\]
+Uh oh. For any $\epsilon > 0$, Player 1 strictly prefers Hare to Stag. So technically, Player 1's best response to an imperfect Player 2 is to play Hare. But Player 2's best response if Player 1 plays Hare is to also play Hare, meaning their original strategy no longer holds, and suggesting that the players will end up at (Hare, Hare) (because Player 1's best response if Player 2 plays Hare is to play Hare, so the ``cycle" is closed). Even if $\epsilon << 1 \Longrightarrow 2\epsilon, \: 3\epsilon << 1$, Hare's weak domination of Stag means that Hare is preferred when Player 2's probability of Stag is anything less than certain.
+
+If, however, $\epsilon$ is so small that Player 1 really doesn't perceive it, then maybe the Stag Hunt can survive at (Stag, Stag) despite Player 2's imperfections, since the difference in Player 1's expected payoffs is only one $\epsilon$.
 
 \newpage
 
 \subsection*{Part f} Suppose instead one player plays $\epsilon[Stag]+(1-\epsilon)[Hare]$. What is the other player's best response?
+\\ \\
+For the sake of consistency, and because we generally dislike Player 2, let's continue with their imperfection:
+\begin{center}
+	\begin{game}{2}{2}[Player 1][Player 2]
+		& Stag ($\epsilon$) & Hare ($1-\epsilon$)\\
+		Stag & 3,3 & 0,3\\
+		Hare & 3,0 & 1,1
+	\end{game}
+\end{center}
 
+Like before, we can look at Player 1's expected payoffs (LHS: Stag, RHS: Hare):
+\[
+\begin{aligned}
+	\epsilon(3) + (1-\epsilon)(0) &\overset{?}{=} \epsilon(3) + (1-\epsilon)(1) \\
+	3\epsilon &\overset{?}{=} 3\epsilon + 1 - \epsilon \\
+	0 &\overset{?}{=} 1 - \epsilon
+\end{aligned}
+\]
+
+If $\epsilon << 1 \Longrightarrow 1 - \epsilon > 0$, so Player 1 strictly prefers Hare to Stag. If Player 1 plays Hare, Player 2's best response is to play Hare, so this scenario ``survives." (Unlike the hare.)
 \newpage
 
 \subsection*{Part g} A trembling-hand perfect equilibrium is a pure strategy Nash equilibrium in which each player's strategy is still a best response if their opponent instead uses a mixed strategy in which there is a very small chance of deviating from the equilibrium action. Which of the two pure strategy Nash equilibria in this game are trembling-hand perfect? Justify your answer briefly.
+\\ \\ 
+(Hare, Hare) is trembling-hand perfect, because any deviation from pure Stag forces the ``perfect" player to Hare, at which point Hare becomes the best response for the trembling-hand player. See part (f).
 
 \newpage
 
