@@ -1,0 +1,192 @@
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{caption}
+\usepackage{enumerate}
+\usepackage{framed}
+\usepackage[margin=1in]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage{epstopdf}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{natbib}
+\usepackage{paralist}
+\usepackage{pdfpages}
+\usepackage{setspace}
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{graphicx} % graphics
+\usepackage{epsfig} % eps graphics
+\usepackage{hyperref} % urls
+\usepackage{booktabs} % table styling
+\usepackage{overpic}
+\usepackage{fix-cm}
+\usepackage{rotating}
+\usepackage{transparent}
+\usepackage{attrib}
+\usepackage{tikz}
+\usepackage{multirow}
+\usetikzlibrary{arrows,automata,3d}
+\usepackage{epstopdf}
+\usepackage{epigraph}
+\usepackage{sgame}
+\usetikzlibrary{calc}
+
+\tikzset{
+% Two node styles for game trees: solid and hollow
+solid node/.style={circle,draw,inner sep=1.5,fill=black},
+hollow node/.style={circle,draw,inner sep=1.5}
+}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newcommand{\g}{\ensuremath{G}}
+\newcommand{\strat}{\ensuremath{s}}
+\newcommand{\strati}[1]{\ensuremath{s_{#1}}}
+\newcommand{\stratpro}{\ensuremath{\mathbf{s}}}
+\newcommand{\stratproi}[1]{\ensuremath{\mathbf{s}_{#1}}}
+\newcommand{\besti}[2]{\ensuremath{B_{#1}\left(#2\right)}}
+\newcommand{\EE}[1]{\ensuremath{\operatorname{E}\left[#1\right]}}
+\newcommand{\condEE}[2]{\ensuremath{\operatorname{E}\left[#1\Big|#2\right]}}
+
+\newcommand{\solution}[2][show]{                                  % Replace "show" with any other word to hide solutions.
+    \ifthenelse{ \equal{#1}{show} }{ \textcolor{blue}{#2}}{}}    % THIS FUNCTION LETS YOU WRITE IN SOLUTIONS BUT HIDE THEM WHEN RENDERING
+
+\title{Problem \# 3}
+\author{Game Theory, Spring 2022}
+\date{Due: April 19 by 8:30 AM Pacific time}
+
+\begin{document}
+
+\maketitle
+
+%\begin{figure}[h]
+%  \centering
+%    \includegraphics[width=0.5\textwidth]{../Cartoons/car_traffic_cartoon}
+%   \captionsetup{labelformat=empty}
+%\end{figure}
+
+\section*{Correlated Equilibria \& Trembling Hand Perfect Equilibria}
+
+As we discussed in the first week, the game of Chicken has two Nash equilibria, neither of which stands out as an ``obvious" choice. If players cannot agree on the same equilibrium, they run the risk of choosing the mutually bad outcome. Therefore, some mechanism is desirable that encourages the players to coordinate on choosing one equilibrium over the other. This problem will explore such a mechanism, as well as two new equilibrium concepts.
+
+\newpage
+
+To explore the first concept, we will work with a model of two drivers approaching an intersection. Each has two options: Stop or Go. If they both Stop, then they are both delayed until they can figure out who should go first. But if they both Go and continue through the intersection, they crash, which is much worse.
+
+\subsection*{Part a}
+The game is shown below. We know that (Stop, Go) and and (Go, Stop) are both pure strategy Nash equilibria. What is the mixed strategy Nash equilibrium? Show your work for full credit.
+\begin{center}
+\begin{game}{2}{2}[Driver 1][Driver 2]
+ & Stop & Go\\
+Stop & -2,-2 & -1,1\\
+Go & 1,-1 & -10,-10
+\end{game}
+\end{center}
+
+The mixed strategy Nash equilibrium occurs when each driver randomizes their choice of Stop and Go such that the other is indifferent between their two choices. Let $p$ represent the probability Driver 1 chooses Stop, and $q$ represent the probability that Driver 2 chooses Stop:
+\begin{center}
+	\begin{game}{2}{2}[Driver 1][Driver 2]
+		& Stop ($q$) & Go ($1-q$)\\
+		Stop ($p$) & -2,-2 & -1,1\\
+		Go ($1-p$)& 1,-1 & -10,-10
+	\end{game}
+\end{center}
+
+So Driver 1 would choose $p$ such that Driver 2's expected payoff is the same, whether Driver 2 chooses Stop or Go. Driver 2 will receive the top row payoff with probability $p$, and the bottom row payoff with probability $1-p$. Each side of the equation will represent one of Driver 2's choices, i.e. the left side of the equation represents Driver 2's expected payoff from Stop, and the right side represents Driver 2's expected payoff from Go:
+\[
+\begin{aligned}
+p(-2) + (1-p)(-1) &= p(1) + (1-p)(-10) \\
+-2p -1 + p &= p - 10 + 10p \\
+-p - 1 &= 11p - 10 \\
+9 &= 12p \\
+p^* &= \frac{9}{12} = \frac{3}{4}
+\end{aligned}
+\]
+
+Similarly, Driver 2 would choose $q$ such that Driver 1's expected payoff is the same, whether Driver 1 chooses Stop or Go. Driver 1 will receive the left payoff with probability $q$, and the right payoff with probability $1-q$. In the equation, the left hand side represents Driver 1's expected payoff from choosing Stop, and the right hand side represents Driver 1's expected payoff from choosing Go:
+\[
+	q(-2) + (1-q)(-1) = q(1) + (1-q)(-10)
+\]
+
+Given the symmetry of the payoff matrix (i.e., substituting $p$ for $q$ gives us the exact same equation we had above), we can take a shortcut and arrive at $q^* = \frac{3}{4}$.
+
+So, the mixed  strategy Nash equilibrium is: \textbf{both drivers choose Stop with probability 0.75, and Go with probability 0.25}. In ``math" notation, we can represent the equilibrium as: 
+\[
+(0.75[\text{Stop}] + 0.25[\text{Go}], \: 0.75[\text{Stop}] + 0.25[\text{Go}])
+\]
+\newpage
+
+\subsection*{Part b}
+What is the equilibrium probability of crashing (i.e. both playing ``Go"), and what is the overall equilibrium expected payoff of each player?
+\\ \\
+We're assuming a simultaneous game, and no communication or prior beliefs about the other drivers beyond a belief in their rationality and ability to arrive at the Nash equilibrium. Then the probability that one Driver chooses Go is independent of the other driver's choice, so the probability of (Go, Go) is simply the product of each Driver's probability of choosing Go:
+\[
+\Pr{(\text{Go, Go})} = \frac{1}{4} \times \frac{1}{4} = \frac{1}{16}
+\]
+
+The probabilities of the other outcomes can be calculated similarly:
+\renewcommand{\gamestretch}{1.5}
+\begin{center}
+	\begin{game}{2}{2}[Driver 1][Driver 2]
+		& Stop ($q=0.75$) & Go ($1-q=0.25$)\\
+		Stop ($p=0.75$) & $\frac{3}{4} \times \frac{3}{4} = \frac{9}{16} \: (-2,-2)$ & $\frac{3}{4} \times \frac{1}{4} = \frac{3}{16} \: (-1,1)$\\
+		Go ($1-p=0.25$)& $\frac{1}{4} \times \frac{3}{4} = \frac{3}{16} \: (1,-1)$ & $\frac{1}{4} \times \frac{1}{4} = \frac{1}{16} \: (-10,-10)$
+	\end{game}
+\end{center}
+
+Each player's equilibrium expected payoff is simply the payoff for each outcome, weighted by the probability of arriving at that outcome. For Driver 1:
+\[
+\begin{aligned}
+\mathbb{E}(V) &= \frac{9}{16}(-2) + \frac{3}{16}(-1) + \frac{3}{16}(1) + \frac{1}{16}(-10) \\ \\
+              &= \frac{-18}{16} + \frac{-3}{16} + \frac{3}{16} + \frac{-10}{16} \\ \\
+              &= \frac{-28}{16} = \frac{-7}{4} = -1.75
+\end{aligned}
+\]
+Again, we can rely on symmetry to safely say that -1.75 is also Driver 2's expected equilibrium payoff.
+\newpage
+
+\subsection*{Part c}
+Now we introduce the stoplight. The stoplight serves as a \emph{public signal}; in other words, it is visible to everyone and allows drivers a chance to coordinate their responses. There are two possible signals, which we describe as a pair of colors. The first color is shown to Driver 1, and the second color to Driver 2. The signals are $\gamma_1=(Red,Green)$ and $\gamma_2=(Green,Red)$. Each signal is shown with probability $\frac{1}{2}$.
+
+In a correlated equilibrium, each player chooses a strategy (possibly a mixed strategy) to use for \emph{each} signal. If the strategies are mutual best responses, then the equilibrium holds. In this case, find a pair of mutual best responses for each signal. Explain your logic briefly to defend your answer.
+
+\newpage
+
+\subsection*{Part d} In the correlated equilibrium, what is the probability that the drivers crash, and what is the expected payoff of each driver prior to approaching the stoplight?
+
+\newpage
+
+\subsection*{Part e} Now consider another game with two equilibria: Stag Hunt. Another theory of how people choose an equilibrium is that it should be stable to perturbations--in other words, if an opponent makes a mistake, or has a very small probability of playing a different action, a player should still want to stick with their equilibrium strategy. Consider the variation on the Stag Hunt game below:
+\begin{center}
+\begin{game}{2}{2}[Player 1][Player 2]
+ & Stag & Hare\\
+Stag & 3,3 & 0,3\\
+Hare & 3,0 & 1,1
+\end{game}
+\end{center}
+You can verify that both (Stag,Stag) and (Hare,Hare) are Nash equilibria. Suppose that one player plays Stag but has a small probability $\epsilon$ of ``accidentally" playing Hare, so their strategy is $(1-\epsilon)[Stag]+\epsilon[Hare]$. What is the other player's best response? (Note: By ``small" we mean that you can assume $\epsilon$ is much smaller than 1.)
+
+\newpage
+
+\subsection*{Part f} Suppose instead one player plays $\epsilon[Stag]+(1-\epsilon)[Hare]$. What is the other player's best response?
+
+\newpage
+
+\subsection*{Part g} A trembling-hand perfect equilibrium is a pure strategy Nash equilibrium in which each player's strategy is still a best response if their opponent instead uses a mixed strategy in which there is a very small chance of deviating from the equilibrium action. Which of the two pure strategy Nash equilibria in this game are trembling-hand perfect? Justify your answer briefly.
+
+\newpage
+
+\subsection*{Part h (OPTIONAL, not graded, just for practice)} In the stoplight setting from part (c), suppose instead there are 3 signals: (Red, Green), (Green, Red), and (Red,Red). This means that when a player sees a red light, they are unsure if the other driver also sees red, or if they see green. Suppose the probabilities are as follows: (Red, Green) and (Green, Red) each have probability 0.4, and (Red, Red) has probability 0.2.
+
+Find strategies that constitute a correlated equilibrium. What are the expected payoffs in this case? (Hint: You will have to use some additional math to show that these are indeed best responses, and you may need Bayes' rule to find conditional probabilities. We will discuss Bayes' rule in Chapter 8.)
+
+\end{document}
