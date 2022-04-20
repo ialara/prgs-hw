@@ -1,0 +1,189 @@
+---
+title: "Lab 2"
+author: "Ignacio Lara"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Building and Plotting the Network
+
+1. Install and load the packages readr and igraph
+
+```{r message=FALSE, warning=FALSE}
+### downloads and installs new features from the internet.  You only need to run these commands once.
+
+# install.packages("readr")
+# install.packages("igraph")
+
+## You need to load the particular fatures (packages) that you'll use for a given session
+library(readr)
+library(igraph)
+library(tidyverse)
+library(RColorBrewer)
+```
+
+2. Import nodes and edges as separate data frames using *read_csv* from readr
+
+```{r}
+## here, i'm importing the cvs files that contain the raw data entered through excel
+## the read_csv function is part of the readr package
+data_dir <- "Data"
+airports <- read_csv(file.path(data_dir, "airportnodes.csv"))
+routes <- read_csv(file.path(data_dir, "routesel.csv"))
+```
+### Explore the Data
+#### Airports data
+First, let's just get a feel for the columns, their types, and some of their values using `glimpse()`. Then, we'll look at missing values.
+```{r}
+glimpse(airports)
+colSums(is.na(airports))
+```
+It looks like we have some duplicated information, probably from a merge between different datasets. For example, `id`, `ID`, and `IATA` all seem to refer to the International Air Transport Association (IATA) 3-letter airport codes. Let's check the number of times those columns match:
+
+```{r}
+summary <- airports %>% group_by(id) %>% summarize(across(c('ID','IATA'), n_distinct))
+summary
+summary %>% summarize(across(-id, .fns = max))
+```
+The first summary table shows the number of unique values of `ID` and `IATA` for each value of `id`. The second summary table finds the maximum number of unique values. Since the maximum number is 1, we can be confident that the `id`, `ID`, and `IATA` columns always match. 
+
+Since `id` and `ID` have 0 missing values, but `IATA` has 750 `NA`s, there are some airports contained in the dataset(s) that used `id` / `ID` which are missing from the dataset that used `IATA`. Let's keep the `id` column to preserve these airports, and explore what the rows with missing `IATA` are like.
+```{r}
+airports %>% filter(is.na(IATA))
+nodes <- airports %>% select(-c('ID','IATA'))
+glimpse(nodes)
+```
+Based on the `filter` we used, it seems that the `airportID:source` columns (all columns from `airportID` to `source`) came from a different data set, and the airports with missing values from `IATA` are just absent from this second dataset (because all other columns in `airportID:source` for these rows are also `NA`). 
+
+To be consistent with which `latitude` and `longitude` we use across the airports in our dataset, let's stick with the ones that came from the first dataset, and drop the ones from the second dataset (`longitude.y` and `latitude.y`).
+
+Finally, since we are only really interested in the graph of flight routes, where nodes are departure/destination airports and arcs are (directed) routes operated by airlines between airports, we don't need a lot of the extra detail like the ICAO code, time zone, altitude, etc.
+```{r}
+nodes <- nodes %>% select(id:ICAO) %>% select(-X1)
+glimpse(nodes)
+```
+#### Routes data
+
+Now we'll follow a similar process with the `routes` dataset.
+```{r}
+glimpse(routes)
+colSums(is.na(routes))
+```
+There are also some ambiguous names here, possibly indicative of repeated data. What does `country` refer to?
+```{r}
+routes %>% group_by(Source) %>% summarize(countries = n_distinct(country))
+routes %>% group_by(Target) %>% summarize(countries = n_distinct(country))
+routes %>% group_by(airline) %>% summarize(countries = n_distinct(country))
+```
+So `country` cannot refer to the country of the departure or arrival airport, since the same airport code has multiple unique values of `country`. It seems that `country` is then related to `airline`, since each `airline` has only a handful of values for `country`, and most `airline`s have only 1 `country`:
+```{r}
+mult_airlines <- routes %>% group_by(airline) %>% summarize(countries = n_distinct(country)) %>% filter(countries > 1) %>% .$airline
+mult_airlines
+
+routes %>% select(airline, airline_name, country) %>% filter(airline %in% mult_airlines) %>% unique()
+```
+It looks like some two-letter airline codes are repeated, perhaps because airlines registered in different countries are allowed to have the same code, or maybe some older airlines with routes in the data have since gone out of business or changed codes with another airline. Again, since we only really care about which airport pairs are served by _any_ airline. In total, 113 of the 568 airline codes are associated with more than 1 country. Overall, though, I'm not concerned about this data issue.
+```{r}
+arcs <- routes %>% select(Source, Target)
+glimpse(arcs)
+arcs <- arcs %>% count(Source, Target, name='weight')
+glimpse(arcs)
+```
+The last step counts the number of times the unique airport pair occurs in the `routes` data. Since the data is directed, each one-way flight between two airports would be listed, i.e. $AAA \rightarrow BBB$ and $BBB \rightarrow AAA$ would be listed separately.
+
+### Construct the Graph
+
+```{r}
+g <- graph_from_data_frame(arcs, vertices = nodes)
+```
+
+#### Strength
+
+First, let's get a handle on the simplest measure of centrality- strength is equivalent to degree, but it accounts for the weights of each edge (that is, it is the weighted sum of the connections of a node).
+
+```{r}
+V(g)$strength <- strength(g, mode='all')
+g
+```
+To make the graph more tractable, let's filter to show only the most "connected" airports:
+```{r, fig.align="center", out.width="100%", fig.width=8}
+choose_top <- 20
+
+top_degree_airports <- as_tibble(vertex_attr(g)) %>% slice_max(strength, n = choose_top)
+
+g_top <- induced_subgraph(g, which(V(g)$name %in% top_degree_airports$name))
+
+top_routes <- as_long_data_frame(g_top) %>% select(-c('from','to','from_airportID','to_airportID'))
+glimpse(top_routes)
+
+V(g_top)$color <- as.factor(V(g_top)$country)
+edge_starts <- ends(g_top, E(g_top), names=F)[,1] # Starting nodes for each edge
+E(g_top)$color <- V(g_top)$color[edge_starts] # Match edge color to color of starting node
+
+par(mar = c(1,1,1,1)) # Plot margins (to make plot fill more of page)
+plot(g_top, edge.arrow.size=0.2, vertex.size=V(g_top)$strength / 64, vertex.shape='circle', vertex.label.cex=1, vertex.label.font=2, vertex.label.family='sans', vertex.label.color='black', edge.width = E(g_top)$weight / 5, edge.curved = 0.1, layout=layout.circle, palette=brewer.pal(n_distinct(V(g_top)$country), 'Paired'))
+
+```
+In the above graph, the size of the node is proportional to its total strength, i.e. the weighted sum of all edges flowing into and out of the node. The color of the node corresponds to the country of the airport. The width of the edge is proportional to the original `weight` we calculated earlier, i.e. the count of that city pair appearing in the `routesel` data file. Finally, the color of the edge matches the color of its starting node, to help visualize the directionality of the network. 
+
+One thing that stands out to me is the dominance of domestic US air travel, even in a global routes dataset. In particular, Atlanta (ATL) has by far the greatest strength; its connection to and from Chicago O'Hare (ORD) is likely a significant contributor, and dwarfs almost any other city pair in the top 20--including transcontinental, transatlantic, and intra-Europe/intra-Asia routes. I was also surprised at the German hubs of Frankfurt (FRA) and Munich (MUC)--their strength is quite high without any particularly dominant city-pairs; perhaps this is an indication of Germany's high betweenness, i.e. high strength resulting from a large number of infrequently-traveled routes rather than a few major arterial connections.
+
+#### Other Maps
+
+Note that this graph only shows flights among the 20 airports with the greatest strength; it does not show other airports that the top 20 airports fly to. Suppose we were interested in visualizing that more complete map, i.e. we want to see the map of any routes that depart from or arrive in the airports with the highest strength:
+```{r}
+choose_top <- 5
+
+top_subset <- top_degree_airports[0:choose_top,] # Further filter the top list from above
+## Show the top_subset nodes, and any direct destination from those nodes (1-neighbors)
+g_out <- subgraph.edges(g, unlist(incident_edges(g, top_subset$name, mode="out"), use.names=F))
+
+v_attrs <- as_tibble(vertex_attr(g_out))
+gorder(g_out) # Number of vertices
+n_distinct(v_attrs$country) # Number of unique countries
+
+world <- map_data("world")
+
+ggplot() +
+  geom_map(data=world, map=world, aes(long, lat, map_id=region), color='gray', fill='white', size=0.05) +
+  geom_point(data=v_attrs, aes(x=longitude, y=latitude, size=strength/4096, color=country), alpha=0.2) +
+  geom_curve(data=as_long_data_frame(g_out), aes(x=from_longitude, xend=to_longitude,
+                               y=from_latitude, yend=to_latitude, color=factor(from_country), size=weight/4096),
+                              alpha=0.1) + 
+  scale_color_discrete(breaks = top_subset$country) + 
+  scale_size(guide='none') +
+  theme(legend.position="top")
+```
+
+
+So, by looking at just the 5 airports with the greatest total strength, we can fly _from_ those airports to a total of 647 other airports, spread across 147 countries! Note that this is only showing the routes _departing_ from the top 5 airports...a graph attempting to show arrivals as well would be pretty overwhelming.
+
+Here's what that would look like for just the top 2 airports, Frankfurt (FRA) and Atlanta (ATL):
+```{r}
+choose_top <- 2
+
+top_subset <- top_degree_airports[0:choose_top,]
+## Now show all departures and arrivals to/from top nodes (mode='all')
+g_out <- subgraph.edges(g, unlist(incident_edges(g, top_subset$name, mode="all"), use.names=F))
+
+v_attrs <- as_tibble(vertex_attr(g_out))
+gorder(g_out)
+n_distinct(v_attrs$country)
+
+ggplot() +
+  geom_map(data=world, map=world, aes(long, lat, map_id=region), color='gray', fill='white', size=0.05) +
+  geom_point(data=v_attrs, aes(x=longitude, y=latitude, size=strength/4096, color=country), alpha=0.2) +
+  geom_curve(data=as_long_data_frame(g_out), aes(x=from_longitude, xend=to_longitude,
+                               y=from_latitude, yend=to_latitude, color=factor(from_country), size=weight/4096),
+                              alpha=0.1) + 
+  scale_color_discrete(breaks = top_subset$country) + 
+  scale_size(guide='none') +
+  theme(legend.position="top")
+```
+
+
+We still see that those two airports are connected (via departures, arrivals, or both) to 412 other airports in a total of 116 countries!
