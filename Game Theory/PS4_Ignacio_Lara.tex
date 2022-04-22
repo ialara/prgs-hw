@@ -62,6 +62,8 @@ hollow node/.style={circle,draw,inner sep=1.5}
 \newcommand{\solution}[2][no]{                                  % Replace "show" with any other word to hide solutions.
     \ifthenelse{ \equal{#1}{show} }{ \textcolor{blue}{#2}}{}}    % THIS FUNCTION LETS YOU WRITE IN SOLUTIONS BUT HIDE THEM WHEN RENDERING
 
+\graphicspath{ {./img/}}
+
 \title{Problem \#4}
 \author{Ignacio Lara - Game Theory, Spring 2022}
 \date{Due: Tuesday, April 26 by 8:30 AM Pacific}
@@ -148,7 +150,75 @@ A is strictly better off separating for any $\gamma < 0.5$. They might also choo
 \subsection*{Part d} Now let's expand so that we consider different-sized groups. Let there be $N$ people from culture $B$ and one person from $A$. (You can also think of this as the relative size of the cultures, i.e. culture $B$ is $N$ times as large as culture $A$.) Each person can contribute up to 10 to the public good. Let the contributions from culture $B$ be labeled $x_j$ for $j=1,\ldots,N$ and the person from $A$ still has contribution $x_A$. Then person $i$ from culture $B$ has payoff function $10-x_i+2\left(x_A+\sum_{j=1}^{N}x_j\right)$. The one person from $A$ has payoff function $10-x_A+2\gamma\left(x_A+\sum_{j=1}^{N}x_j\right)$.
 
 For what values of $\gamma$, as a function of $N$, would group $A$ choose to leave and form their own country?
+\\ \\
+Intuitively, I would think the more disparate the two groups (i.e. with increasing $N$), the higher the translation cost would have to be to make separating more preferable for A than remaining (i.e. the critical $\gamma$ would be lower), because by separating, A is forgoing a larger total contribution to the public good.
+\\ \\
+A's payoff function is $10 + (2\gamma - 1)x_A + 2\gamma x_B$, where $x_B = \sum_{j=1}^N x_j$. So like before, A will not contribute anything to the public good if $\gamma < 0.5$. How can we tell what B will collectively contribute? Assuming a homogeneous population, we can just find the contribution for one individual $x_i$, then represent $x_B = Nx_i$. $i$'s payoff function is:
+\[
+10 - x_i + 2(x_A + \sum_{j=1}^{N} x_j) = 10 - x_i + 2x_A + 2x_B
+\]
 
+Like before, it does not depend on $\gamma$. But it does depend on everyone else in B, \emph{including} $i$'s contribution again! That is, the payoff for $i$ can be expanded to separate out $i$'s contribution to B's public good consumption:
+\[
+10 - x_i + 2(x_A + x_i + \sum_{j \neq i} x_j) = 10 - x_i + 2(x_A + x_i + (N-1)x_i)
+\]
+
+Note the last step in the RHS above relies on the homogeneous population assumption. That is, if everyone in B has the same $x_j$, then the contribution of B, minus one individual, is the sum of $(N-1)$ contributions, each of which are equal to the contribution of the individual ($x_B = x_i + (N-1)x_j, \quad x_i = x_j$). This simplifies $i$'s payoff function quite a bit:
+\[
+\begin{aligned}
+10 - x_i + 2(x_A + x_i + (N-1)x_i) &= 10 - x_i + 2x_A + 2Nx_i \\
+&= 10 + 2x_A + (2N-1)x_i
+\end{aligned}
+\]
+
+Note that $x_i$ contributes linearly to $i$'s payoff, and it is a positive contribution only if $2N - 1 > 0 \Longrightarrow N > 0.5$. Thus, $i$ will contribute their maximum of 10 if $N > 0.5$, and contribute 0 if $N < 0.5$. This in turn means:
+\[
+x_B = \begin{cases}
+	10N, & N > 0.5 \\
+	0, & N < 0.5
+\end{cases}
+\]
+(Again, if $N$ is exactly 0.5, $i$ is indifferent between any $x_i \in \left[0, 10\right]$, so $x_B \in \left[0, 10N\right]$.)
+\\ \\
+Return to A's payoff. If $N < 0.5$, B's contributions $x_B^* = 0$, so A's payoff is affected only by $\gamma$'s impact on $x_A$.
+Like we said earlier, A does not contribute anything to the public good if $(2\gamma - 1) < 0 \Longrightarrow \gamma < 0.5$. Otherwise, $x_A$ contributes linearly to A's payoff, so $x_A^* = 10$. So, with zero contribution from B to the public good:
+\[
+V_A^* = \begin{cases}
+	10 = 10 + 0 + 0, & \gamma < 0.5 \\
+	20\gamma = 10 + 20\gamma - 10 + 0, & 0.5 \leq \gamma \leq 1
+\end{cases}
+\]
+\\ \\
+Now, if $N > 0.5 \Longrightarrow x_B^* = 10N$, so A's payoffs are:
+\[
+V_A^* = \begin{cases}
+	10 + 20N\gamma, & \gamma < 0.5 \\
+	20\gamma(N+1) = 20\gamma + 20N\gamma, & 0.5 \leq \gamma \leq 1
+\end{cases}
+\]
+\\ \\
+Almost home! The last step is to remember that A's payoff function becomes $10 + x$ if A separates, meaning their payoff $V_A^* = 20$. So, without separating, when is $V_A^* < 20$?
+\\ \\
+If $N < 0.5$:
+\begin{itemize}
+	\item $V_A^* = 10, \gamma < 0.5$ \textbf{Separate!}
+	\item $V_A^* = 20\gamma, \gamma > 0.5 \therefore V_A^* < 20 \implies \gamma < 1$ \textbf{Separate!}
+\end{itemize}
+So A is better off alone regardless of any $\gamma < 1$ if $N < 0.5$.
+\\ \\
+If $N > 0.5$:
+\begin{itemize}
+	\item $V_A^* = 10 + 20N\gamma, \gamma < 0.5$
+	\subitem $\therefore V_A^* < 20 \implies 20N\gamma < 10 \implies \gamma < \frac{1}{2N}$ 
+	\subitem \textbf{Separate if $\gamma < \frac{1}{2N} \ \text{and} \ \gamma < 0.5$}
+	\item $V_A^* = 20\gamma(N+1), 0.5 \leq \gamma \leq 1$
+	\subitem $\therefore V_A^* < 20 \implies \gamma(N+1) < 1 \implies \gamma < \frac{1}{N+1}$ 
+	\subitem \textbf{Separate if $\gamma < \frac{1}{N+1} \ \text{and} \ 0.5 \leq  \gamma \leq 1$}
+\end{itemize}
+
+Graphically (the shaded region is where A is better off separating):
+
+\includegraphics{culture_separate}
 \newpage
 
 \subsection*{Part e} Based on the answers above, which would we expect to be more stable: countries composed of many small but similar cultural subgroups, or countries with a few large but very different subgroups? Note that this is a testable implication: you could examine data on civil wars and ethnic composition to determine if our model appears supported by history.
