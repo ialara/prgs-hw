@@ -1,6 +1,6 @@
 ---
 title: "Lab 3"
-date: "`r Sys.Date()"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -32,7 +32,7 @@ glimpse(people)
 `directors` is our "master" edge list...each row describes a _relationship_ between a firm and a person employed in some sort of directorship role. We can say that the people _lead_ firms to characterize the bipartite relationship. `firms` contains characteristics of the firms; one row represents one firm. Similarly, `people` contains characteristics of the individual; one row represents one person. This data looks like it came from a relational database, where `BvD` represents the key that relates firms to directorships and `UCI` is the key that relates people to directorships.
 
 ```{r}
-small_dirs <- sample_n(directors, 5000, replace=F)
+small_dirs <- sample_n(directors, 20000, replace=F)
 ```
 
 ```{r}

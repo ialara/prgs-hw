@@ -1,0 +1,200 @@
+---
+title: "Lab 3"
+date: "`r Sys.Date()"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE}
+library(igraph)
+library(tidyverse)
+```
+
+## Load Data
+
+```{r}
+data_dir <- 'Data'
+
+directors <- read_csv(file.path(data_dir, 'Dir2020raw.csv'))
+firms <- read_csv(file.path(data_dir, 'Firm_LU.csv')) %>% distinct(BvD, .keep_all=TRUE)
+people <- read_csv(file.path(data_dir, 'People_LU.csv')) %>% distinct(UCI, .keep_all=TRUE)
+
+glimpse(directors)
+glimpse(firms)
+glimpse(people)
+```
+
+## Clean Up the Dataset
+
+`directors` is our "master" edge list...each row describes a _relationship_ between a firm and a person employed in some sort of directorship role. We can say that the people _lead_ firms to characterize the bipartite relationship. `firms` contains characteristics of the firms; one row represents one firm. Similarly, `people` contains characteristics of the individual; one row represents one person. This data looks like it came from a relational database, where `BvD` represents the key that relates firms to directorships and `UCI` is the key that relates people to directorships.
+
+```{r}
+small_dirs <- sample_n(directors, 5000, replace=F)
+```
+
+```{r}
+dirs_el <- small_dirs %>% select(UCI, BvD, DMtitle)
+dirs_net <- graph_from_data_frame(dirs_el)
+V(dirs_net)$type <- V(dirs_net)$name %in% people$UCI # True is person, False is firm
+
+vertex_attr_names(dirs_net)
+
+bipartite_proj_list <- bipartite_projection(dirs_net)
+bipartite_proj_list
+
+bipart_firms <- bipartite_proj_list$proj1
+bipart_people <- bipartite_proj_list$proj2
+
+bipart_people_df <- igraph::as_data_frame(bipart_people, 'both')
+bipart_people <- graph_from_data_frame(bipart_people_df$edges, vertices = bipart_people_df$vertices %>% left_join(people, by=c("name" = "UCI")), directed=F)
+
+V(bipart_people)$color <- as.factor(V(bipart_people)$ISO)
+
+plot(bipart_people, vertex.label=NA, vertex.size=sqrt(degree(bipart_people))+1, layout=layout_with_dh)
+```
+
+
+## Lab Code
+
+### Set source and target for the graph
+
+```{r}
+# Rename employee ID 
+colnames(RAND_work)[1]<-"EMPID"
+
+###  Make source and target columns (not really required for igraph)
+RAND_work$Source <- RAND_work$EMPID
+RAND_work$Target <- RAND_work$PTN
+
+head(RAND_work)
+
+```
+
+### Reorder Columns 
+```{r}
+####  Reorder columns so that the source and target ids are in the first two columns
+RAND_work <-RAND_work[,c(8,9,1,4,2,3,5,6,7)]
+
+head(RAND_work)
+```
+
+
+### Filter the Dataset 
+
+```{r}
+#  Filter the dataset so that people working for more than 10 days are included and only charges from 2018 are used
+RAND_work_c <-subset(RAND_work, TOTAL_HOURS > 80)
+RAND_work_c.18 <-subset(RAND_work_c, FY > 2017)
+head (RAND_work_c.18)
+```
+
+## Create a Nodelist
+
+```{r}
+#### Create a node attribute table for people and select only people attributes
+People_nodes <-RAND_work_c.18
+People_nodes.d <- People_nodes[c(3,7,8)]
+
+### remove duplicates 
+People_nodes.d <- dplyr::distinct(People_nodes.d, EMPID, .keep_all = TRUE)
+
+
+```
+
+## Create a graph 
+```{r}
+#### remove everything but source and target
+RAND.18 <- RAND_work_c.18[c(-3,-4, -5, -6, -6, -7, -8, -9)]
+
+#### make a bimartite network
+RAND.net.18 <- graph_from_data_frame(RAND.18)
+plot(RAND.net.18)
+
+RAND.net.18
+```
+## Check if it will project properly as a bipartite network
+```{r}
+### create a "type" column to identify the two types of nodes
+V(RAND.net.18)$type <-V(RAND.net.18)$name %in% RAND_work_c.18$Source # True is person, False is ptn
+is_bipartite(RAND.net.18) # checks whether the graph has the graph has a vertex attribute called type which is necessary for the projection
+```
+
+
+```{r}
+### take the two projections of the network
+RAND.list<-bipartite_projection(RAND.net.18, type=V(RAND.net.18)$type, multiplicity = TRUE) # Multiplicity to double count individuals connected through more than one ptn 
+RAND.bipar.1<-RAND.list$proj1  ## PTNs
+RAND.bipar.2<-RAND.list$proj2  ### People
+
+RAND.list
+```
+
+```{r}
+###  Select the People network and add vertex attributes
+#### Department
+People2018.network<-set_vertex_attr(RAND.bipar.2,
+                                    name="dept",
+                                    index = V(RAND.bipar.2),
+                                    value=People_nodes.d$DEPT_10_10_FY)
+#### Title
+People2018.network<-set_vertex_attr(People2018.network,
+                                    name="title",
+                                    index = V(RAND.bipar.2),
+                                    value=People_nodes.d$TITLE_10_10_FY)
+
+V(People2018.network)[V(People2018.network)$dept == "BPS"]$color <- "green"
+V(People2018.network)[V(People2018.network)$dept == "DPS"]$color <- "blue"
+V(People2018.network)[V(People2018.network)$dept == "ESS"]$color <- "orange"
+V(People2018.network)[V(People2018.network)$dept == "EAS"]$color <- "red"
+
+
+#### Behold!
+plot(People2018.network,
+     vertex.color=V(People2018.network)$color,
+     vertex.size=4,
+     vertex.label=NA)
+
+```
+
+Let's look at the network of senior behavioral and social scientists 
+```{r}
+
+
+People2018.network.1<-induced.subgraph(People2018.network, which(V(People2018.network)$title=="Behavioral/Soc Sci, Sr"))
+
+plot(People2018.network.1,
+     vertex.color=V(People2018.network.1)$color,
+     vertex.size=8,
+     vertex.label=NA)
+
+```
+
+Let's compare it to the network of senior political scientists
+
+```{r}
+
+
+People2018.network.2<-induced.subgraph(People2018.network, which(V(People2018.network)$title=="Political Sci, Sr"))
+
+plot(People2018.network.2,
+     vertex.color=V(People2018.network.1)$color,
+     vertex.size=8,
+     vertex.label=NA)
+
+```
+
+Let's look at which type of worker has the highest average degree centrality
+
+```{r}
+V(People2018.network)$deg<-degree(People2018.network, v = V(People2018.network), mode = c("all"),  normalized = FALSE)
+
+data.frame(deg=V(People2018.network)$deg,
+           title=V(People2018.network)$title) %>% 
+  group_by(title) %>% 
+  summarise(mean.deg=mean(deg)) %>% 
+  arrange(desc(mean.deg)) 
+  
+```
