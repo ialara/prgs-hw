@@ -1,0 +1,107 @@
+\documentclass[10pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{enumerate}
+\usepackage{framed}
+\usepackage[margin=1in]{geometry}
+\usepackage[pdftex]{graphicx}
+\usepackage{epstopdf}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{natbib}
+\usepackage{paralist}
+\usepackage{pdfpages}
+\usepackage{setspace}
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{graphicx} % graphics
+\usepackage{epsfig} % eps graphics
+\usepackage{hyperref} % urls
+\usepackage{booktabs} % table styling
+\usepackage{overpic}
+\usepackage{fix-cm}
+\usepackage{rotating}
+\usepackage{transparent}
+\usepackage{attrib}
+\usepackage{tikz}
+\usepackage{multirow}
+\usetikzlibrary{arrows,automata,3d}
+\usepackage{epstopdf}
+\usepackage{epigraph}
+\usepackage{sgame}
+\usetikzlibrary{calc}
+
+\tikzset{
+% Two node styles for game trees: solid and hollow
+solid node/.style={circle,draw,inner sep=1.5,fill=black},
+hollow node/.style={circle,draw,inner sep=1.5}
+}
+
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+
+\newcommand{\g}{\ensuremath{G}}
+\newcommand{\strat}{\ensuremath{s}}
+\newcommand{\strati}[1]{\ensuremath{s_{#1}}}
+\newcommand{\stratpro}{\ensuremath{\mathbf{s}}}
+\newcommand{\stratproi}[1]{\ensuremath{\mathbf{s}_{#1}}}
+\newcommand{\besti}[2]{\ensuremath{B_{#1}\left(#2\right)}}
+\newcommand{\EE}[1]{\ensuremath{\operatorname{E}\left[#1\right]}}
+\newcommand{\condEE}[2]{\ensuremath{\operatorname{E}\left[#1\Big|#2\right]}}
+\newcommand{\condpr}[2]{\ensuremath{\operatorname{Pr}\left[#1\Big|#2\right]}}
+\newcommand{\pr}[1]{\ensuremath{\operatorname{Pr}\left[#1\right]}}
+
+
+\newcommand{\solution}[2][no]{                                  % Replace "show" with any other word to hide solutions.
+    \ifthenelse{ \equal{#1}{show} }{ \textcolor{blue}{#2}}{}}    % THIS FUNCTION LETS YOU WRITE IN SOLUTIONS BUT HIDE THEM WHEN RENDERING
+
+\title{Problem \#5}
+\author{Ignacio Lara - Game Theory}
+\date{Due: May 3 by 8:30 AM Pacific}
+
+\begin{document}
+
+\maketitle
+
+\section*{Bargaining Models with the Threat of War}
+
+This question is based on Powell (1999), \emph{In the Shadows of Power}, as discussed in McCarthy \& Meirowitz (2007). Two countries, $A$ and $B$, are in conflict over a particular region. We will write the payoffs in the order: ($A$'s payoff, $B$'s payoff). Currently, $A$ controls the region but country $B$ is staking a claim. The overall value of the region is equal to 1 in each period. The game works as follows: $A$ can either offer a treaty with $B$ or attack $B$ and start a war.
+
+If $A$ offers a treaty, the treaty specifies a value $x$, which is the fraction of the region's value that would go to country $B$, where $0\leq x\leq1$. $B$ can either accept or reject the offer. If $B$ accepts the offer, the payoffs are ($1-x,x$). If $B$ rejects the offer, the game ends and the payoffs are $(1,0)$.
+
+If $A$ goes to war, it beats $B$ with probability $p$. Both countries pay a cost of $c$ after a war, where $0\leq c\leq1$. The winner gets the region, so the winner's total payoff is $1-c$ and the loser's payoff is $-c$.
+
+\newpage
+
+\subsection*{Part a} Assume for now that $A$ definitely would win the war, so $p=1$. Also suppose $x$ is fixed, say, it's determined by a third party that negotiates the treaty, so neither $A$ nor $B$ can choose it. Draw the extensive form of the game.
+
+\newpage
+
+\subsection*{Part b} Characterize all the possible SPNE. Be sure to indicate a complete strategy profile for each SPNE.
+
+\newpage
+
+\subsection*{Part c} Now suppose $A$ can choose $x$. What offer $x$ should A choose in order to maximize its equilibrium payoff?
+
+\newpage
+
+\subsection*{Part d} Now suppose $0<p<1$, so $A$ might lose a war if it starts one. If $A$ offers a treaty, it can still choose the value of $x$. Again, characterize all the SPNE. Note that now, you must take expected values in the situation where $A$ goes to war. (Hint: The answer is simpler than it might seem. However, you must still be sure to specify $B$'s response for \emph{each possible offer}, not just the one $A$ would choose in equilibrium.)
+
+\newpage
+
+\subsection*{Part e} Now let's make things more realistic and allow $B$ to retaliate. After $A$ makes an offer, if $B$ accepts it then the game ends with payoffs as above. But if $B$ rejects it, then $B$ can choose to attack $A$. Just like if $A$ attacks $B$, when $B$ attacks $A$ there is a probability $p$ that $A$ wins the war. If $B$ rejects $A$'s offer but does not attack $A$, the game ends with payoffs $(1,0)$ as in part (a).
+
+Find \emph{any} SPNE in which $A$ appeases $B$, i.e. $A$ chooses to make a strictly positive offer $x>0$ and $B$ accepts the offer. You can choose particular values of $x$, $p$, and $c$ and prove that your choices yields an SPNE, or you can work with variables. Either way, you must write the full strategy profile that constitutes the SPNE and you must prove it is indeed an SPNE. You may also assume that when $B$ is indifferent, it chooses to accept an offer (this gets rid of the need to consider mixed strategies).
+
+\newpage
+
+\subsection*{Part f: Optional, not graded} For the same situation as above, find any SPNE in which $A$ attacks $B$ from the beginning. (Hint this is a knife-edge case where one parameter has a specific value.)
+
+\end{document}

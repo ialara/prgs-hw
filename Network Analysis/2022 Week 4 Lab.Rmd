@@ -1,0 +1,149 @@
+---
+title: "2022 Week 4 Lab"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+Import Data
+
+```{r}
+library(igraph)
+### The nodes file contains the ID codes of doctors and then considerable information about them - their specialty, number of patients of certain types, network data etc
+
+###  The edges file is a list of teh connections, with an edge weight that equals the number of shared patients
+
+data_dir <- "Data"
+LAedges<-read.csv(file.path(data_dir, "LAedges.csv"))
+LAnodes<-read.csv(file.path(data_dir, "LAnodes.csv"))
+
+### Remove the first column of the edgelist
+LAedges <- LAedges[ -c(1) ]
+
+```
+
+Create the Network and Plot 
+```{r}
+LA.doctors <- graph_from_data_frame(LAedges, directed=FALSE, vertices = LAnodes)
+
+#preppat is number of prescriptions so we're sizing by that (Scaled)
+plot(LA.doctors,
+     vertex.size=V(LA.doctors)$preppat/10,
+     vertex.label=NA)
+
+```
+
+
+Filter to Drs in SM
+```{r}
+SM.doctors<-induced.subgraph(LA.doctors, which(V(LA.doctors)$ZIP %in% c("90401","90402", "90403", "90404", "90405"  )))
+
+plot(SM.doctors,
+     vertex.size=V(SM.doctors)$preppat/10,
+     vertex.label=NA)
+
+```
+
+Filter to the largest component
+
+```{r}
+### extract only the connected component, i.e. ignore all of the doctors around the edge that aren't linked to other doctors in this dataset
+
+# extract the components
+SM.doctors.components <- clusters(SM.doctors)
+# which is the largest component
+SM.doctors.max <- which.max(SM.doctors.components$csize)
+# get the subgraph correspondent to just the giant component
+SM.doctors.g <- induced.subgraph(SM.doctors, which(SM.doctors.components$membership == SM.doctors.max))
+
+
+plot(SM.doctors.g,
+     vertex.size=V(SM.doctors.g)$preppat/5,
+     vertex.label=NA)
+
+```
+
+
+Community Detection
+
+```{r}
+
+### I'll go over this in the upcoming lecture, but igraph has several ways to group networks into communities,in which each node is assigned to one community based on a particular algorithmic strategy
+
+## example of fastgreedy community detection
+SM.doctors.comms <- fastgreedy.community(SM.doctors.g)
+V(SM.doctors.g)$community <- membership(SM.doctors.comms)
+
+
+SM.doctors.g.comms2 <-spinglass.community (SM.doctors.g)   ## the spinglass algorithm can only work on connected graphs
+V(SM.doctors.g)$community2 <- membership(SM.doctors.g.comms2)
+
+
+# number of communities
+length(SM.doctors.comms)
+length(SM.doctors.g.comms2)
+
+# size of communities
+sizes(SM.doctors.comms)
+sizes(SM.doctors.g.comms2)
+
+
+# crossing edges: Which edges cross multiple communities?
+crossing.edges<-crossing(SM.doctors.comms, SM.doctors.g)  ### not terribly rewarding in a large network
+
+table(crossing.edges)
+
+crossing.edges2<-crossing(SM.doctors.g.comms2, SM.doctors.g)
+
+table(crossing.edges2)
+
+# plot communities with shaded regions
+plot(SM.doctors.g.comms2, # communities
+     SM.doctors.g, # graph
+     vertex.size=V(SM.doctors.g)$preppat/10,
+     vertex.label=NA)
+
+
+```
+
+
+Filter to one community
+
+```{r}
+
+### you can subset the graph to look at particular communities as well. Use sizes(SM.doctors.comms.g.2) to figure out the community with the biggest size. It's actually 14 with 22 nodes
+
+SM.doctors.g.2.community1 <- induced.subgraph(SM.doctors.g, which(V(SM.doctors.g)$community2 == 14))
+
+# induced.subgraph(SM.doctors, which(SM.doctors.components$membership == SM.doctors.max))
+
+SM.doctors.g.2.community1
+
+plot(SM.doctors.g.2.community1,
+     vertex.size=V(SM.doctors.g)$preppat*10,
+     vertex.label=NA)
+
+```
+
+
+
+# Assignment Notes
+
+Lab: Physician data  
+
+Baseline Assignment:  
+
+1) Load and orient yourself to a dataset of physician patient sharing
+
+2) Compile a table of summary statistics about the network structure (of a few communities)
+
+3) Identify key doctors in the network (or community)
+
+<!-- #### explore the data -->
+<!-- ### try things like making the nodes different colors depending on whether they are PrEP prescribers,  -->
+<!-- ### perhaps size them by the e number of PrEP, HIV or Herpes patients they have -->
+<!-- ### perhaps see if there are interesting patterns that emerge if you examine different physician specialty codes? -->
+
